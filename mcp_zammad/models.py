@@ -5,8 +5,9 @@ import html
 import os
 from datetime import date, datetime
 from enum import Enum
+from typing import Annotated
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationInfo, field_validator
+from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, ValidationInfo, field_validator
 
 
 class StrictBaseModel(BaseModel):
@@ -30,6 +31,16 @@ class ResponseFormat(str, Enum):
 
     MARKDOWN = "markdown"
     JSON = "json"
+
+
+def _normalize_format(v: str) -> str:
+    """Normalize response format to lowercase."""
+    if isinstance(v, str):
+        return v.lower()
+    return v
+
+
+ResponseFormatInput = Annotated[ResponseFormat, BeforeValidator(_normalize_format)]
 
 
 class ArticleType(str, Enum):
@@ -299,7 +310,9 @@ class TicketSearchParams(StrictBaseModel):
     customer: str | None = Field(None, description="Filter by customer email")
     page: int = Field(default=1, ge=1, description="Page number (must be >= 1)")
     per_page: int = Field(default=25, ge=1, le=100, description="Results per page (1-100)")
-    response_format: ResponseFormat = Field(default=ResponseFormat.MARKDOWN, description="Output format")
+    response_format: ResponseFormatInput = Field(
+        default=ResponseFormat.MARKDOWN, description="Output format: \"markdown\" (default) or \"json\""
+    )
 
 
 class Attachment(BaseModel):
@@ -340,8 +353,8 @@ class GetTicketParams(StrictBaseModel):
     include_articles: bool = Field(default=True, description="Whether to include ticket articles/comments")
     article_limit: int = Field(default=10, ge=-1, description="Maximum number of articles to return (-1 for all)")
     article_offset: int = Field(default=0, ge=0, description="Number of articles to skip for pagination")
-    response_format: ResponseFormat = Field(
-        default=ResponseFormat.MARKDOWN, description="Output format: markdown (default) or json"
+    response_format: ResponseFormatInput = Field(
+        default=ResponseFormat.MARKDOWN, description="Output format: \"markdown\" (default) or \"json\""
     )
 
 
@@ -409,8 +422,8 @@ class GetUserParams(StrictBaseModel):
     """Get user request parameters."""
 
     user_id: int = Field(gt=0, description="User ID")
-    response_format: ResponseFormat = Field(
-        default=ResponseFormat.MARKDOWN, description="Output format: markdown (default) or json"
+    response_format: ResponseFormatInput = Field(
+        default=ResponseFormat.MARKDOWN, description="Output format: \"markdown\" (default) or \"json\""
     )
 
 
@@ -420,15 +433,17 @@ class SearchUsersParams(StrictBaseModel):
     query: str = Field(min_length=1, description="Search query (name, email, etc.)")
     page: int = Field(default=1, ge=1, description="Page number (must be >= 1)")
     per_page: int = Field(default=25, ge=1, le=100, description="Results per page (1-100)")
-    response_format: ResponseFormat = Field(default=ResponseFormat.MARKDOWN, description="Output format")
+    response_format: ResponseFormatInput = Field(
+        default=ResponseFormat.MARKDOWN, description="Output format: \"markdown\" (default) or \"json\""
+    )
 
 
 class GetOrganizationParams(StrictBaseModel):
     """Get organization request parameters."""
 
     org_id: int = Field(gt=0, description="Organization ID")
-    response_format: ResponseFormat = Field(
-        default=ResponseFormat.MARKDOWN, description="Output format: markdown (default) or json"
+    response_format: ResponseFormatInput = Field(
+        default=ResponseFormat.MARKDOWN, description="Output format: \"markdown\" (default) or \"json\""
     )
 
 
@@ -438,7 +453,9 @@ class SearchOrganizationsParams(StrictBaseModel):
     query: str = Field(min_length=1, description="Search query (name, domain, etc.)")
     page: int = Field(default=1, ge=1, description="Page number (must be >= 1)")
     per_page: int = Field(default=25, ge=1, le=100, description="Results per page (1-100)")
-    response_format: ResponseFormat = Field(default=ResponseFormat.MARKDOWN, description="Output format")
+    response_format: ResponseFormatInput = Field(
+        default=ResponseFormat.MARKDOWN, description="Output format: \"markdown\" (default) or \"json\""
+    )
 
 
 class GetTicketStatsParams(StrictBaseModel):
@@ -474,7 +491,9 @@ class GetTicketStatsParams(StrictBaseModel):
 class ListParams(StrictBaseModel):
     """List resource request parameters."""
 
-    response_format: ResponseFormat = Field(default=ResponseFormat.MARKDOWN, description="Output format")
+    response_format: ResponseFormatInput = Field(
+        default=ResponseFormat.MARKDOWN, description="Output format: \"markdown\" (default) or \"json\""
+    )
 
 
 class User(BaseModel):
