@@ -310,7 +310,9 @@ class TicketSearchParams(StrictBaseModel):
     customer: str | None = Field(None, description="Filter by customer email")
     page: int = Field(default=1, ge=1, description="Page number (must be >= 1)")
     per_page: int = Field(default=25, ge=1, le=100, description="Results per page (1-100)")
-    response_format: ResponseFormatInput = Field(default=ResponseFormat.MARKDOWN, description="Output format")
+    response_format: ResponseFormatInput = Field(
+        default=ResponseFormat.MARKDOWN, description="Output format: 'markdown' (default) or 'json'"
+    )
 
 
 class Attachment(BaseModel):
@@ -352,7 +354,7 @@ class GetTicketParams(StrictBaseModel):
     article_limit: int = Field(default=10, ge=-1, description="Maximum number of articles to return (-1 for all)")
     article_offset: int = Field(default=0, ge=0, description="Number of articles to skip for pagination")
     response_format: ResponseFormatInput = Field(
-        default=ResponseFormat.MARKDOWN, description="Output format: markdown (default) or json"
+        default=ResponseFormat.MARKDOWN, description="Output format: 'markdown' (default) or 'json'"
     )
 
 
@@ -421,7 +423,7 @@ class GetUserParams(StrictBaseModel):
 
     user_id: int = Field(gt=0, description="User ID")
     response_format: ResponseFormatInput = Field(
-        default=ResponseFormat.MARKDOWN, description="Output format: markdown (default) or json"
+        default=ResponseFormat.MARKDOWN, description="Output format: 'markdown' (default) or 'json'"
     )
 
 
@@ -431,7 +433,9 @@ class SearchUsersParams(StrictBaseModel):
     query: str = Field(min_length=1, description="Search query (name, email, etc.)")
     page: int = Field(default=1, ge=1, description="Page number (must be >= 1)")
     per_page: int = Field(default=25, ge=1, le=100, description="Results per page (1-100)")
-    response_format: ResponseFormatInput = Field(default=ResponseFormat.MARKDOWN, description="Output format")
+    response_format: ResponseFormatInput = Field(
+        default=ResponseFormat.MARKDOWN, description="Output format: 'markdown' (default) or 'json'"
+    )
 
 
 class GetOrganizationParams(StrictBaseModel):
@@ -439,7 +443,7 @@ class GetOrganizationParams(StrictBaseModel):
 
     org_id: int = Field(gt=0, description="Organization ID")
     response_format: ResponseFormatInput = Field(
-        default=ResponseFormat.MARKDOWN, description="Output format: markdown (default) or json"
+        default=ResponseFormat.MARKDOWN, description="Output format: 'markdown' (default) or 'json'"
     )
 
 
@@ -449,7 +453,9 @@ class SearchOrganizationsParams(StrictBaseModel):
     query: str = Field(min_length=1, description="Search query (name, domain, etc.)")
     page: int = Field(default=1, ge=1, description="Page number (must be >= 1)")
     per_page: int = Field(default=25, ge=1, le=100, description="Results per page (1-100)")
-    response_format: ResponseFormatInput = Field(default=ResponseFormat.MARKDOWN, description="Output format")
+    response_format: ResponseFormatInput = Field(
+        default=ResponseFormat.MARKDOWN, description="Output format: 'markdown' (default) or 'json'"
+    )
 
 
 class GetTicketStatsParams(StrictBaseModel):
@@ -485,7 +491,9 @@ class GetTicketStatsParams(StrictBaseModel):
 class ListParams(StrictBaseModel):
     """List resource request parameters."""
 
-    response_format: ResponseFormatInput = Field(default=ResponseFormat.MARKDOWN, description="Output format")
+    response_format: ResponseFormatInput = Field(
+        default=ResponseFormat.MARKDOWN, description="Output format: 'markdown' (default) or 'json'"
+    )
 
 
 class User(BaseModel):
