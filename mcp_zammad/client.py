@@ -192,6 +192,7 @@ class ZammadClient:
         priority: str = "2 normal",
         article_type: str = "note",
         article_internal: bool = False,
+        owner: str | None = None,
     ) -> dict[str, Any]:
         """Create a new ticket."""
         ticket_data = {
@@ -206,6 +207,9 @@ class ZammadClient:
                 "internal": article_internal,
             },
         }
+
+        if owner:
+            ticket_data["owner"] = owner
 
         return dict(self.api.ticket.create(ticket_data))
 

@@ -1051,11 +1051,12 @@ class ZammadMCPServer:
                     - title (str): Ticket title/subject (required)
                     - group (str): Group name to assign ticket (required)
                     - customer (str): Customer email or login (required)
-                    - article (dict): Initial article with body and type (required)
+                    - article_body (str): Initial article/comment body (required)
+                    - article_type (str): Article type (default: "note")
+                    - article_internal (bool): Whether article is internal (default: False)
                     - state (str | None): State name (default: "new")
                     - priority (str | None): Priority name (default: "2 normal")
                     - owner (str | None): Owner email or login
-                    - tags (list[str] | None): Initial tags
 
             Returns:
                 Ticket: The created ticket object with schema:
@@ -1086,7 +1087,6 @@ class ZammadMCPServer:
                 - Validates group, customer, state, priority names before creation
 
             Note:
-                The article parameter must include 'body' and 'type' (e.g., 'note', 'email').
                 All name-based references (group, customer, state, priority) are validated.
                 Created ticket returns with expanded field objects, not just IDs.
             """

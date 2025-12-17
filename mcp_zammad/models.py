@@ -275,6 +275,7 @@ class TicketCreate(StrictBaseModel):
     priority: str = Field(default="2 normal", description="Priority name (1 low, 2 normal, 3 high)", max_length=100)
     article_type: str = Field(default="note", description="Article type (note, email, phone)", max_length=50)
     article_internal: bool = Field(default=False, description="Whether the article is internal")
+    owner: str | None = Field(None, description="Owner email or login", max_length=255)
 
     @field_validator("title", "article_body")
     @classmethod
