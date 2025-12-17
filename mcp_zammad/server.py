@@ -53,6 +53,7 @@ from .models import (
     TicketUpdateParams,
     User,
     UserBrief,
+    UserCreate,
 )
 
 
@@ -1050,12 +1051,12 @@ class ZammadMCPServer:
                 params (TicketCreate): Validated ticket creation parameters containing:
                     - title (str): Ticket title/subject (required)
                     - group (str): Group name to assign ticket (required)
-                    - customer (str): Customer email or login (required)
-                    - article (dict): Initial article with body and type (required)
-                    - state (str | None): State name (default: "new")
-                    - priority (str | None): Priority name (default: "2 normal")
-                    - owner (str | None): Owner email or login
-                    - tags (list[str] | None): Initial tags
+                    - customer (str): Customer email or login (required, must exist in Zammad)
+                    - article_body (str): Initial article/comment body (required)
+                    - state (str): State name (default: "new")
+                    - priority (str): Priority name (default: "2 normal")
+                    - article_type (str): Article type - "note", "email", "phone" (default: "note")
+                    - article_internal (bool): Whether article is internal-only (default: False)
 
             Returns:
                 Ticket: The created ticket object with schema:
@@ -1074,26 +1075,36 @@ class ZammadMCPServer:
                 ```
 
             Examples:
-                - Use when: "Create ticket for server outage" -> title, group, customer, article
-                - Use when: "New high priority ticket" -> title, group, customer, article, priority="high"
+                - Use when: "Create ticket for server outage" -> title, group, customer, article_body
+                - Use when: "New high priority ticket" -> add priority="3 high"
                 - Don't use when: Ticket already exists (use zammad_update_ticket)
-                - Don't use when: Only adding comment to existing ticket (use zammad_add_article)
+                - Don't use when: Only adding comment (use zammad_add_article)
 
             Error Handling:
                 - Returns "Error: Validation failed" if required fields missing
                 - Returns "Error: Permission denied" if no create permissions
                 - Returns "Error: Resource not found" if group/customer/state invalid
-                - Validates group, customer, state, priority names before creation
 
             Note:
-                The article parameter must include 'body' and 'type' (e.g., 'note', 'email').
-                All name-based references (group, customer, state, priority) are validated.
-                Created ticket returns with expanded field objects, not just IDs.
+                The customer must exist in Zammad before creating a ticket.
+                Use zammad_create_user to create new customers first.
             """
             client = self.get_client()
-            ticket_data = client.create_ticket(**params.model_dump(exclude_none=True, mode="json"))
-
-            return Ticket(**ticket_data)
+            try:
+                ticket_data = client.create_ticket(**params.model_dump(exclude_none=True, mode="json"))
+                return Ticket(**ticket_data)
+            except Exception as e:
+                error_msg = str(e).lower()
+                if "customer" in error_msg and (
+                    "not found" in error_msg or "couldn't find" in error_msg or "lookup" in error_msg
+                ):
+                    raise ValueError(
+                        f"Customer '{params.customer}' not found in Zammad. "
+                        f"Note: Customers must exist before creating tickets. "
+                        f"Use zammad_search_users to check, or zammad_create_user to create. "
+                        f"Example: zammad_create_user(email='{params.customer}', firstname='...', lastname='...')"
+                    ) from e
+                raise
 
         @self.mcp.tool(annotations=_write_annotations("Update Ticket"))
         def zammad_update_ticket(params: TicketUpdateParams) -> Ticket:
@@ -1595,6 +1606,37 @@ class ZammadMCPServer:
                 result = _format_users_markdown(users, f"query='{params.query}'")
 
             return truncate_response(result)
+
+        @self.mcp.tool(annotations=_write_annotations("Create User"))
+        def zammad_create_user(params: UserCreate) -> User:
+            """Create a new user (customer) in Zammad.
+
+            Args:
+                params (UserCreate): User creation parameters:
+                    - email (str): Email address (required)
+                    - firstname (str): First name (required)
+                    - lastname (str): Last name (required)
+                    - login, phone, mobile, organization, note (optional)
+
+            Returns:
+                User: Created user object
+
+            Examples:
+                - "Create customer" -> email, firstname, lastname
+                - "Add contact with phone" -> + phone field
+                - Don't use when: User exists (use zammad_search_users first)
+
+            Note:
+                After creating, use their email in zammad_create_ticket's customer field.
+
+            Error Handling:
+                - Returns "Error: Validation failed" if required fields missing or email invalid
+                - Returns "Error: Permission denied" if no create permissions
+                - Returns "Error: Email already exists" if user with email already exists
+            """
+            client = self.get_client()
+            user_data = client.create_user(**params.model_dump(exclude_none=True))
+            return User(**user_data)
 
         @self.mcp.tool(annotations=_read_only_annotations("Get Organization Details"))
         def zammad_get_organization(params: GetOrganizationParams) -> str:
