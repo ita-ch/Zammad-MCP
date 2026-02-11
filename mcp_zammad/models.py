@@ -267,6 +267,9 @@ class Ticket(BaseModel):
     machine: Annotated[str | None, BeforeValidator(lambda v: v.get("label") if isinstance(v, dict) else v)] = Field(
         None, alias="Machine"
     )
+    sw_version: Annotated[str | None, BeforeValidator(lambda v: v.get("label") if isinstance(v, dict) else v)] = Field(
+        None, alias="swversion"
+    )
 
     model_config = ConfigDict(populate_by_name=True)
 
