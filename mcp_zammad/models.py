@@ -263,6 +263,11 @@ class Ticket(BaseModel):
     # Tags if included
     tags: list[str] | None = None
 
+    # Custom fields
+    machine: str | None = Field(None, alias="Machine")
+
+    model_config = ConfigDict(populate_by_name=True)
+
 
 class TicketCreate(StrictBaseModel):
     """Create ticket request."""

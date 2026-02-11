@@ -361,6 +361,8 @@ def _format_tickets_markdown(tickets: list[Ticket], query_info: str = "Search Re
         lines.append(f"- **ID**: {ticket.id}")
         lines.append(f"- **State**: {state_name}")
         lines.append(f"- **Priority**: {priority_name}")
+        if ticket.machine:
+            lines.append(f"- **Machine**: {ticket.machine}")
         # Use isoformat() to include timezone information if available
         lines.append(f"- **Created**: {ticket.created_at.isoformat()}")
         lines.append("")
@@ -574,6 +576,8 @@ def _format_ticket_detail_markdown(ticket: Ticket) -> str:
     lines.append(f"**Group**: {_brief_field(ticket.group, 'name')}")
     lines.append(f"**Owner**: {_brief_field(ticket.owner, 'email')}")
     lines.append(f"**Customer**: {_brief_field(ticket.customer, 'email')}")
+    if ticket.machine:
+        lines.append(f"**Machine**: {ticket.machine}")
     lines.append(f"**Created**: {ticket.created_at.isoformat()}")
     lines.append(f"**Updated**: {ticket.updated_at.isoformat()}")
     lines.append("")
