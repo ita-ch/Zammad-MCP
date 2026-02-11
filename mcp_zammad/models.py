@@ -5,7 +5,7 @@ import html
 import os
 from datetime import date, datetime
 from enum import Enum
-from typing import Annotated
+from typing import Annotated, Any
 
 from pydantic import BaseModel, BeforeValidator, ConfigDict, Field, ValidationInfo, field_validator
 
@@ -264,7 +264,9 @@ class Ticket(BaseModel):
     tags: list[str] | None = None
 
     # Custom fields
-    machine: str | None = Field(None, alias="Machine")
+    machine: Annotated[str | None, BeforeValidator(lambda v: v.get("label") if isinstance(v, dict) else v)] = Field(
+        None, alias="Machine"
+    )
 
     model_config = ConfigDict(populate_by_name=True)
 
